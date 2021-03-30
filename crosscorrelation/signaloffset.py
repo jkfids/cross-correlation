@@ -41,7 +41,7 @@ X = np.linspace(0, 1, len(R))
 
 fig2, ax = plt.subplots()
 ax.plot(X, R, linewidth=0.2)
-ax.set_title('Sensor 1 & Sensor 2 Cross Correlation')
+ax.set_title('Sensor Cross Correlation')
 ax.set_xlabel('Lag')
 ax.set_ylabel('Correlation (Normalized)')
 fig2.savefig('output/sensorcorrelation_plot.png')
