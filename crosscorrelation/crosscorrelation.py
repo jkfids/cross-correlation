@@ -18,6 +18,7 @@ def crosscorr(f, g):
     g = np.array(g) - np.mean(g)
     N = len(f)
     r = np.zeros(2*N - 1, dtype=np.single)
+    
     r[N-1] = np.dot(f, g)
     for i in range(N-1):
         r[i] = np.dot(f[0:i+1], g[N-1-i:N])
