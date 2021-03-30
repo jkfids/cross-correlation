@@ -35,6 +35,6 @@ def norm_crosscorr2d(t, A):
     pass
 
 if __name__ == "__main__":
-    f = list(range(10))
+    f = list(range(5))
     r = crosscorr(f, f)
     print(r)
