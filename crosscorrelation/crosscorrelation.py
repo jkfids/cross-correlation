@@ -8,6 +8,7 @@ Created on Mon Mar 29 17:06:26 2021
 # Import standard libraries
 import numpy as np
 
+
 # Part 1 functions
 def crosscorr(f, g):
     """
@@ -36,6 +37,4 @@ def norm_crosscorr2d(t, A):
     pass
 
 if __name__ == "__main__":
-    f = list(range(5))
-    r = crosscorr(f, f)
-    print(r)
+    pass
