@@ -12,14 +12,14 @@ from matplotlib import pyplot as plt
 # Import local modules
 from crosscorrelation import norm_crosscorr
 
-f = list(range(1000))
+f = np.array(list(range(1000)))
 g = np.roll(f, 100)
 
-R = norm_crosscorr(f, g)
+R = norm_crosscorr(f, f)
 X = np.linspace(-1, 1, len(R))
 
 fig, ax = plt.subplots()
-ax.plot(X, R, linewidth=0.2)
+ax.plot(X, R)
 ax.set_title('Cross Correlation')
 ax.set_xlabel('Lag')
 ax.set_ylabel('Correlation (Normalized)')

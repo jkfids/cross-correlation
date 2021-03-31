@@ -7,9 +7,11 @@ Created on Mon Mar 29 17:06:26 2021
 
 # Import standard libraries
 import numpy as np
+#from numba import jit
 
 
 # Part 1 functions
+#@jit(nopython=True)
 def crosscorr(f, g):
     """
     Takes two vectors of the same size and passes one over the other to create
@@ -37,4 +39,5 @@ def norm_crosscorr2d(t, A):
     pass
 
 if __name__ == "__main__":
-    pass
+    f = list(range(100))
+    r = crosscorr(f,f)

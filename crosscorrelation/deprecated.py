@@ -8,6 +8,10 @@ Created on Tue Mar 30 12:50:42 2021
 import numpy as np
 
 def crosscorr(f, g):
+    """
+    Takes two vectors of the same size and passes one over the other to create
+    a correlation vector
+    """
     N = len(f)
     r = np.array([], dtype=np.single)
     r1 = np.array([], dtype=np.single)
