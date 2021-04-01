@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Import local modules
-from crosscorrelation import norm_crosscorr
+from crosscorrelation import *
 
 f = np.array(list(range(1000)))
 g = np.roll(f, 100)
@@ -30,4 +30,5 @@ fig.set_dpi(144)
 
 arg_max = np.argmax(R)/(len(R)-1)-0.5
 print(arg_max)
-print(len(f)-1-np.argmax(R))
+print(get_roll(R))
+

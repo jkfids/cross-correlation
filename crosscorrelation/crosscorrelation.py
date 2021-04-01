@@ -39,7 +39,7 @@ def norm_crosscorr2d(t, A):
     pass
 
 def get_roll(R):
-    pass
+    return round(len(R)/2-0.5-np.argmax(R))
 
 if __name__ == "__main__":
     f = list(range(100))
