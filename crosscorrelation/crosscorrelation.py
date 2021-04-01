@@ -7,8 +7,8 @@ Created on Mon Mar 29 17:06:26 2021
 
 # Import standard libraries
 import numpy as np
+from scipy import fft
 #from numba import jit
-
 
 # Part 1 functions
 #@jit(nopython=True)
@@ -27,7 +27,8 @@ def crosscorr(f, g):
     for i in range(N-1):
         r[i] = np.dot(f[0:i+1], g[N-1-i:N])
         r[N+i] = np.dot(f[i+1:N], g[0:N-1-i])
-    return r/N
+    r = r/N
+    return r
 
 def norm_crosscorr(f, g):
     """"
@@ -42,6 +43,32 @@ def norm_crosscorr2d(t, A):
     Calculate the normalized cross-correlation between template matrix t
     and search region matrix A
     """
+    t = np.array(t) - np.mean(t)
+    A = np.array(A)
+    sigma_A = 0
+    try:
+        A_h, A_w = np.shape(A)
+        t_h, t_w = np.shape(t)
+    except:
+        A_h = np.shape(A)[0]
+        t_h = np.shape(t)[0]
+        A_w = A_h
+        t_w = t_h
+    R_h = A_h - t_h + 1 
+    R_w = A_w - t_w + 1 
+    R = np.zeros([R_h, R_w])
+    for i in range(R_h):
+        for j in range(R_w):
+            A_subset = A[i:i+t_h, j:j+t_w]
+            A_subset = A_subset - np.mean(A_subset)
+            sigma_A += np.sum(A_subset**2)
+            R[i, j] = np.sum(A_subset*t)
+            print(f'{i*R_w+j}/{round(R_w*R_h)}')
+    sigma_t = np.sum(t**2)
+    R = R/np.sqrt(sigma_A*sigma_t)
+    return R
+
+def spectal_crosscorr():
     pass
 
 def standev(f):
@@ -57,3 +84,8 @@ def calc_offset(R, scale):
     """
     len_f = (len(R)+1)/2 # Length of input vector
     return (len_f - 1 - np.argmax(R))*scale
+
+if __name__ == "__main__":
+    t = np.random.rand(2,2)
+    A = np.random.rand(10,10)
+    print(norm_crosscorr2d(t, A))   

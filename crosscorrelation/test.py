@@ -7,6 +7,7 @@ Created on Tue Mar 30 22:07:18 2021
 
 # Import standard libraries
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 
 # Import local modules
@@ -28,8 +29,5 @@ ax.grid(True)
 fig.set_size_inches(12, 4)
 fig.set_dpi(144)
 
-arg_max = np.argmax(R)/(len(R)-1)-0.5
-print(arg_max) 
-print(calc_offset(R))
-
-f = np.array(list(range(10)))
+#R = np.load('output/findwally_crosscorr_matrix.npy')
+#pd.DataFrame(R).to_csv('output/findwally_crosscorr_matrix.csv', header=None, index=None)

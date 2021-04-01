@@ -37,7 +37,7 @@ ax2.set_ylabel('Sensor 2')
 fig1.suptitle('Sensor Data')
 fig1.set_size_inches(12, 4)
 fig1.set_dpi(144)
-fig1.savefig('output/sensordata_plot.png')
+fig1.savefig('output\sensordata_plot.png')
 
 # Calculate and plot the normalized cross correlation vector
 start = time()
@@ -45,7 +45,7 @@ R = norm_crosscorr(sensor1, sensor2)
 #R = np.correlate(sensor1, sensor2, 'full')
 end = time()
 X = np.linspace(-0.5, 0.5, len(R))
-print(f'Time to calculate normalized cross correlation: {round(end - start, 4)}s')
+print(f'Time elapsed (calculate cross-corr vector): {round(end - start, 4)}s')
 
 fig2, ax = plt.subplots()
 ax.plot(X, R, linewidth=0.2)
@@ -55,7 +55,7 @@ ax.set_ylabel('Correlation (Normalized)')
 ax.xaxis.set_ticks(np.arange(-0.5, 0.6, 0.1))
 fig2.set_size_inches(12, 4)
 fig2.set_dpi(144)
-fig2.savefig('output/sensorcorrelation_plot.png')
+fig2.savefig('output\sensorcorrelation_plot.png')
 
 # Calculate time offset between two signals and hence distance between sensors
 scale = 4/len(sensor1) # Sensor 1 data spans 4 seconds
