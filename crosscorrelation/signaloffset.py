@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 from time import time
 
 # Import local modules
-from crosscorrelation import norm_crosscorr
+from crosscorrelation import *
 
 # Create output directory if it does not exist
 from pathlib import Path
@@ -25,13 +25,14 @@ sensor1 = df1.to_numpy().flatten()
 sensor2 = df2.to_numpy().flatten()
 
 # Plot sensor data
-X = np.linspace(0, len(sensor1)/44000, len(sensor1))
+sampling_freq = 44000
+X = np.linspace(0, len(sensor1)/sampling_freq, len(sensor1))
 
 fig1, (ax1, ax2) = plt.subplots(2, 1)
 ax1.plot(X, sensor1, linewidth=0.2)
 ax1.set_ylabel('Sensor 1')
 ax2.plot(X, sensor2, linewidth=0.2)
-ax2.set_xlabel('Time')
+ax2.set_xlabel('Time (s)')
 ax2.set_ylabel('Sensor 2')
 fig1.suptitle('Sensor Data')
 fig1.set_size_inches(12, 4)
@@ -44,8 +45,7 @@ R = norm_crosscorr(sensor1, sensor2)
 #R = np.correlate(sensor1, sensor2, 'full')
 end = time()
 X = np.linspace(-0.5, 0.5, len(R))
-print(f'Maximum correlation index: {np.argmax(R)}')
-print(f'Cross correlation calculation time: {round(end - start, 4)}s')
+print(f'Time to calculate normalized cross correlation: {round(end - start, 4)}s')
 
 fig2, ax = plt.subplots()
 ax.plot(X, R, linewidth=0.2)
@@ -56,3 +56,11 @@ ax.xaxis.set_ticks(np.arange(-0.5, 0.6, 0.1))
 fig2.set_size_inches(12, 4)
 fig2.set_dpi(144)
 fig2.savefig('output/sensorcorrelation_plot.png')
+
+# Calculate time offset between two signals and hence distance between sensors
+scale = 4/len(sensor1) # Sensor 1 data spans 4 seconds
+offset = calc_offset(R, scale)
+v = 333 # Sounds moves at 333 m/s
+dist = abs(offset*v)
+print(f'Time offset: Sensor 2 lags sensor 1 by {-offset} seconds')
+print(f'Distance: {round(dist, 2)} metres')

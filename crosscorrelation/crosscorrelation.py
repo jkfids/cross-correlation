@@ -14,8 +14,8 @@ import numpy as np
 #@jit(nopython=True)
 def crosscorr(f, g):
     """
-    Takes two vectors of the same size and passes one over the other to create
-    a correlation vector
+    Takes two vectors of the same size, minus the vector elements by their
+    respective means, and passes one over the other to createa correlation vector
     """
     f = np.array(f) - np.mean(f)
     g = np.array(g) - np.mean(g)
@@ -38,8 +38,13 @@ def norm_crosscorr(f, g):
 def norm_crosscorr2d(t, A):
     pass
 
-def get_roll(R):
-    return round(len(R)/2-0.5-np.argmax(R))
+def calc_offset(R, scale):
+    """
+    Given a cross correlation vector, calculate the time offset between two 
+    sensors
+    """
+    len_f = (len(R)+1)/2 # Length of input vector
+    return (len_f - 1 - np.argmax(R))*scale
 
 if __name__ == "__main__":
     f = list(range(100))

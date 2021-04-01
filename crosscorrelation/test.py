@@ -29,6 +29,6 @@ fig.set_size_inches(12, 4)
 fig.set_dpi(144)
 
 arg_max = np.argmax(R)/(len(R)-1)-0.5
-print(arg_max)
-print(get_roll(R))
+print(arg_max) 
+print(calc_offset(R))
 
