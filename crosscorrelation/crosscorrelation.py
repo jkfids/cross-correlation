@@ -38,6 +38,9 @@ def norm_crosscorr(f, g):
 def norm_crosscorr2d(t, A):
     pass
 
+def get_roll(R):
+    pass
+
 if __name__ == "__main__":
     f = list(range(100))
     r = crosscorr(f,f)
