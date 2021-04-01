@@ -14,8 +14,9 @@ import numpy as np
 #@jit(nopython=True)
 def crosscorr(f, g):
     """
-    Takes two vectors of the same size, minus the vector elements by their
-    respective means, and passes one over the other to createa correlation vector
+    Takes two vectors of the same size, subtracts the vector elements by their
+    respective means, and passes one over the other to construct a 
+    cross-correlation vector
     """
     f = np.array(f) - np.mean(f)
     g = np.array(g) - np.mean(g)
@@ -33,19 +34,26 @@ def norm_crosscorr(f, g):
     Normalised version of crosscorr that divides the correlation vector by
     a product of the input vectors' standard deviations
     """
+    #return crosscorr(f, g)/(standev(f)*standev(g))
     return crosscorr(f, g)/(np.std(f)*np.std(g))
 
 def norm_crosscorr2d(t, A):
+    """
+    Calculate the normalized cross-correlation between template matrix t
+    and search region matrix A
+    """
     pass
 
+def standev(f):
+    """Calculate the standard deviation of an input vector"""
+    f = np.array(f) - np.mean(f)
+    N = len(f)
+    return np.sqrt(np.sum(f**2)/N)
+    
 def calc_offset(R, scale):
     """
-    Given a cross correlation vector, calculate the time offset between two 
-    sensors
+    Calculate the time offset between two signals given their cross-correlation 
+    vector
     """
     len_f = (len(R)+1)/2 # Length of input vector
     return (len_f - 1 - np.argmax(R))*scale
-
-if __name__ == "__main__":
-    f = list(range(100))
-    r = crosscorr(f,f)

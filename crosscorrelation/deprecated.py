@@ -6,6 +6,9 @@ Created on Tue Mar 30 12:50:42 2021
 """
 
 import numpy as np
+from PIL import Image
+
+from crosscorrelation import *
 
 def crosscorr(f, g):
     """
@@ -29,3 +32,8 @@ def crosscorr(f, g):
     r = np.append(r, np.dot(f, g))
     r = np.append(r, r2)
     return r/N
+
+puzzle = Image.open('data\wallypuzzle.png')
+A = np.array(puzzle.convert('L'))
+im = Image.fromarray(A)
+#im.show()
