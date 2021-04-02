@@ -35,7 +35,7 @@ print(f'Time elapsed (calculate 2d cross-corr vector): {round(end - start, 2)}s'
 pd.DataFrame(R).to_csv('output\wallypuzzle_crosscorr_matrix.csv', header=None, index=None)
 
 # Locate and draw yellow rectangle around target
-[y, x] = np.argwhere(R == np.max(R)).flatten()
+[y, x] = np.argwhere(R == np.max(R)).flatten() - 2
 h, w = np.shape(t)
 Draw(puzzle).rectangle([x, y, x+w, y+h], outline=(255,255,0), width=4)
 puzzle.show()
