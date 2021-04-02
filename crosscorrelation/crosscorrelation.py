@@ -7,19 +7,20 @@ Created on Mon Mar 29 17:06:26 2021
 
 # Import standard libraries
 import numpy as np
+from time import time
 from scipy import fft
-#from numba import jit
+from numba import jit, njit
 
 # Part 1 functions
-#@jit(nopython=True)
+@njit
 def crosscorr(f, g):
     """
     Takes two vectors of the same size, subtracts the vector elements by their
     respective means, and passes one over the other to construct a 
     cross-correlation vector
     """
-    f = np.array(f) - np.mean(f)
-    g = np.array(g) - np.mean(g)
+    f = f - np.mean(f)
+    g = g - np.mean(g)
     N = len(f)
     r = np.zeros(2*N - 1, dtype=np.single)
     
@@ -30,22 +31,22 @@ def crosscorr(f, g):
     r = r/N
     return r
 
+@njit
 def norm_crosscorr(f, g):
     """"
     Normalised version of crosscorr that divides the correlation vector by
     a product of the input vectors' standard deviations
     """
-    #return crosscorr(f, g)/(standev(f)*standev(g))
-    return crosscorr(f, g)/(np.std(f)*np.std(g))
+    return crosscorr(f, g)/(standev(f)*standev(g))
+    #return crosscorr(f, g)/(np.std(f)*np.std(g))
 
+@njit
 def norm_crosscorr2d(t, A):
     """
     Calculate the normalized cross-correlation between template matrix t
     and search region matrix A
     """
-    t = np.array(t) - np.mean(t)
-    A = np.array(A)
-    sigma_A = 0
+    t = t - np.mean(t)
     try:
         A_h, A_w = np.shape(A)
         t_h, t_w = np.shape(t)
@@ -56,27 +57,30 @@ def norm_crosscorr2d(t, A):
         t_w = t_h
     R_h = A_h - t_h + 1 
     R_w = A_w - t_w + 1 
-    R = np.zeros([R_h, R_w])
+    #R = np.zeros([R_h, R_w])
+    R = np.zeros((R_h, R_w)) # @njit version of np.zeros inputs tuple, not list
     for i in range(R_h):
         for j in range(R_w):
             A_subset = A[i:i+t_h, j:j+t_w]
             A_subset = A_subset - np.mean(A_subset)
-            sigma_A += np.sum(A_subset**2)
-            R[i, j] = np.sum(A_subset*t)
-            print(f'{i*R_w+j}/{round(R_w*R_h)}')
-    sigma_t = np.sum(t**2)
-    R = R/np.sqrt(sigma_A*sigma_t)
+            sigma_A = np.sqrt(np.sum(A_subset**2))
+            R[i, j] = np.sum(A_subset*t)/sigma_A
+            #print(f'{i*R_w+j}/{round(R_w*R_h)}')
+    sigma_t = np.sqrt(np.sum(t**2))
+    R = R/sigma_t
     return R
 
 def spectal_crosscorr():
     pass
 
+@njit
 def standev(f):
     """Calculate the standard deviation of an input vector"""
-    f = np.array(f) - np.mean(f)
+    f = f - np.mean(f)
     N = len(f)
     return np.sqrt(np.sum(f**2)/N)
     
+@njit
 def calc_offset(R, scale):
     """
     Calculate the time offset between two signals given their cross-correlation 
@@ -84,8 +88,3 @@ def calc_offset(R, scale):
     """
     len_f = (len(R)+1)/2 # Length of input vector
     return (len_f - 1 - np.argmax(R))*scale
-
-if __name__ == "__main__":
-    t = np.random.rand(2,2)
-    A = np.random.rand(10,10)
-    print(norm_crosscorr2d(t, A))   

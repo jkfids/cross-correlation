@@ -45,7 +45,7 @@ R = norm_crosscorr(sensor1, sensor2)
 #R = np.correlate(sensor1, sensor2, 'full')
 end = time()
 X = np.linspace(-0.5, 0.5, len(R))
-print(f'Time elapsed (calculate cross-corr vector): {round(end - start, 4)}s')
+print(f'Time elapsed (calculate cross-corr vector): {round(end - start, 2)}s')
 
 fig2, ax = plt.subplots()
 ax.plot(X, R, linewidth=0.2)
@@ -62,5 +62,5 @@ scale = 4/len(sensor1) # Sensor 1 data spans 4 seconds
 offset = calc_offset(R, scale)
 v = 333 # Sounds moves at 333 m/s
 dist = abs(offset*v)
-print(f'Time offset: Sensor 2 lags sensor 1 by {-offset} seconds')
-print(f'Distance: {round(dist, 2)} metres')
+print(f'Time offset (sensor 2 lags sensor 1): {-offset}s')
+print(f'Distance (between sensors): {round(dist, 2)} metres')

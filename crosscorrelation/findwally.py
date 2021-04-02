@@ -14,26 +14,27 @@ from PIL.ImageDraw import Draw
 
 # Import module function
 from crosscorrelation import norm_crosscorr2d
+#from deprecated import norm_crosscorr2d
 
 # Load images from data via pillow
 puzzle = Image.open('data\wallypuzzle.png')
-rocket = Image.open('data\wallypuzzle_rocket.png')
+target = Image.open('data\wallypuzzle_rocket.png')
 
 # Convert images into greyscale numpy arrays
 A = np.array(puzzle.convert('RGB'))
-t = np.array(rocket.convert('RGB'))
+t = np.array(target.convert('RGB'))
 A = np.mean(A, axis=2)
 t = np.mean(t, axis=2)
 #Image.fromarray(A).show()
 
-# Perform 2d normalized cross-correlation and save cross-correlation matrix as csv
+# Perform 2d normalized cross-correlation and save cross-correlation matrix
 start = time()
 R = norm_crosscorr2d(t, A)
 end = time()
-print(f'Time elapsed (calculate 2d cross-corr vector): {round(end - start, 4)}s')
+print(f'Time elapsed (calculate 2d cross-corr vector): {round(end - start, 2)}s')
 pd.DataFrame(R).to_csv('output\wallypuzzle_crosscorr_matrix.csv', header=None, index=None)
 
-# Locate and draw rectangle around target
+# Locate and draw yellow rectangle around target
 [y, x] = np.argwhere(R == np.max(R)).flatten()
 h, w = np.shape(t)
 Draw(puzzle).rectangle([x, y, x+w, y+h], outline=(255,255,0), width=4)

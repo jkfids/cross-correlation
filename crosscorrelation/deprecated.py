@@ -6,14 +6,13 @@ Created on Tue Mar 30 12:50:42 2021
 """
 
 import numpy as np
-from PIL import Image
 
-from crosscorrelation import *
-
+# Part 1 functions
 def crosscorr(f, g):
     """
-    Takes two vectors of the same size and passes one over the other to create
-    a correlation vector
+    Takes two vectors of the same size, subtracts the vector elements by their
+    respective means, and passes one over the other to construct a 
+    cross-correlation vector
     """
     N = len(f)
     r = np.array([], dtype=np.single)
@@ -33,7 +32,3 @@ def crosscorr(f, g):
     r = np.append(r, r2)
     return r/N
 
-puzzle = Image.open('data\wallypuzzle.png')
-A = np.array(puzzle.convert('L'))
-im = Image.fromarray(A)
-#im.show()
