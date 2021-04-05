@@ -7,9 +7,8 @@ Created on Mon Mar 29 17:06:26 2021
 
 # Import standard libraries
 import numpy as np
-from time import time
 from scipy import fft
-from numba import jit, njit
+from numba import njit
 
 # Part 1 functions
 @njit

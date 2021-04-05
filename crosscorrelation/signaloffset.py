@@ -63,4 +63,4 @@ offset = calc_offset(R, scale)
 v = 333 # Sounds moves at 333 m/s
 dist = abs(offset*v)
 print(f'Time offset (sensor 2 lags sensor 1): {-offset}s')
-print(f'Distance (between sensors): {round(dist, 2)} metres')
+print(f'Distance: {round(dist, 2)} metres')
