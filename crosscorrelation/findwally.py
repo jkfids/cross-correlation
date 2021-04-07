@@ -17,8 +17,8 @@ from crosscorrelation import norm_crosscorr2d
 #from deprecated import norm_crosscorr2d
 
 # Load images from data via pillow
-puzzle = Image.open('data\wallypuzzle.png')
-target = Image.open('data\wallypuzzle_rocket.png')
+puzzle = Image.open('data/wallypuzzle.png')
+target = Image.open('data/wallypuzzle_rocket.png')
 
 # Convert images into greyscale numpy arrays
 A = np.array(puzzle.convert('RGB'))
@@ -39,4 +39,4 @@ pd.DataFrame(R).to_csv('output\wallypuzzle_crosscorr_matrix.csv', header=None, i
 h, w = np.shape(t)
 Draw(puzzle).rectangle([x, y, x+w, y+h], outline=(255,255,0), width=4)
 puzzle.show()
-puzzle.save('output\wallypuzzle_solved.png', 'png')
+puzzle.save('output/wallypuzzle_solved.png', 'png')

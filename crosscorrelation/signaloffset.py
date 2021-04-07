@@ -19,8 +19,8 @@ from pathlib import Path
 Path('output').mkdir(parents=True, exist_ok=True)
 
 # Import sensor data via pandas
-df1 = pd.read_csv('data\sensor1_data.txt', delimiter = "\t")
-df2 = pd.read_csv('data\sensor2_data.txt', delimiter = "\t")
+df1 = pd.read_csv('data/sensor1_data.txt', delimiter = '\t', header=None)
+df2 = pd.read_csv('data/sensor2_data.txt', delimiter = '\t', header=None)
 sensor1 = df1.to_numpy().flatten()
 sensor2 = df2.to_numpy().flatten()
 
@@ -37,7 +37,7 @@ ax2.set_ylabel('Sensor 2')
 fig1.suptitle('Sensor Data')
 fig1.set_size_inches(12, 4)
 fig1.set_dpi(144)
-fig1.savefig('output\sensordata_plot.png')
+fig1.savefig('output/sensordata_plot.png')
 
 # Calculate and plot the normalized cross correlation vector
 start = time()
@@ -55,12 +55,12 @@ ax.set_ylabel('Correlation (Normalized)')
 ax.xaxis.set_ticks(np.arange(-0.5, 0.6, 0.1))
 fig2.set_size_inches(12, 4)
 fig2.set_dpi(144)
-fig2.savefig('output\sensorcorrelation_plot.png')
+fig2.savefig('output/sensorcorrelation_plot.png')
 
 # Calculate time offset between two signals and hence distance between sensors
-scale = 4/len(sensor1) # Sensor 1 data spans 4 seconds
+scale = 1/44000 # Sampling rate of 44 kHz
 offset = calc_offset(R, scale)
 v = 333 # Sounds moves at 333 m/s
 dist = abs(offset*v)
-print(f'Time offset (sensor 2 lags sensor 1): {-offset}s')
+print(f'Time offset (sensor 2 lags sensor 1): {round(-offset, 2)}s')
 print(f'Distance: {round(dist, 2)} metres')

@@ -8,6 +8,7 @@ Created on Tue Mar 30 22:07:18 2021
 # Import standard libraries
 import numpy as np
 import pandas as pd
+from scipy import fft, ifft
 from matplotlib import pyplot as plt
 from time import time
 
@@ -44,3 +45,7 @@ t = np.random.rand(10,10)
 R = norm_crosscorr2d(t,A)
 end = time()
 print(end-start)
+
+#%%
+
+

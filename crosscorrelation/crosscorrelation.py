@@ -7,7 +7,7 @@ Created on Mon Mar 29 17:06:26 2021
 
 # Import standard libraries
 import numpy as np
-from scipy import fft
+from scipy.fft import fft, ifft
 from numba import njit
 
 # Part 1 functions
@@ -15,8 +15,8 @@ from numba import njit
 def crosscorr(f, g):
     """
     Takes two vectors of the same size, subtracts the vector elements by their
-    respective means, and passes one over the other to construct a 
-    cross-correlation vector
+    respective means, and passes one over the other to construct a zero
+    normalised cross-correlation vector
     """
     f = f - np.mean(f)
     g = g - np.mean(g)
@@ -33,8 +33,8 @@ def crosscorr(f, g):
 @njit
 def norm_crosscorr(f, g):
     """"
-    Normalised version of crosscorr that divides the correlation vector by
-    a product of the input vectors' standard deviations
+    Fully normalised version of crosscorr that divides the correlation vector
+    by a product of the input vectors' standard deviations
     """
     return crosscorr(f, g)/(standev(f)*standev(g))
     #return crosscorr(f, g)/(np.std(f)*np.std(g))
@@ -69,8 +69,8 @@ def norm_crosscorr2d(t, A):
     R = R/sigma_t
     return R
 
-def spectal_crosscorr():
-    pass
+def spectral_crosscorr(f, g):
+    return ifft(np.conjugate(fft(f))*fft(g))
 
 @njit
 def standev(f):
