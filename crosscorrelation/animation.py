@@ -15,7 +15,10 @@ from crosscorrelation import *
 # Set parameters
 length = 100
 
+plt.rcParams.update({'font.size': 7})
+
 fig, (ax1, ax2, ax3) = plt.subplots(3,1, dpi=144)
+fig.tight_layout(h_pad=0, rect=[-0.055, -0.05, 1.015, 0.98])
 line1, = ax1.plot([], [], lw=2, color='tab:blue')
 line2, = ax2.plot([], [], lw=2, color='tab:red')
 line3, = ax3.plot([], [], lw=2, color='purple')
@@ -31,6 +34,9 @@ ax3.set_xticks([])
 ax1.set_yticks([])
 ax2.set_yticks([])
 ax3.set_yticks([])
+ax1.title.set_text('f')
+ax2.title.set_text('g')
+ax3.title.set_text('Cross-Correlation (f\u22C6g)')
 
 x = np.linspace(0, 1, length)
 y = np.sin(5*2*np.pi*x)
@@ -52,7 +58,7 @@ def animate(i):
     y_subset = y_slide[leny_slide-i-1-lenx:leny_slide-i-1]
     line1.set_data(x, y)
     line2.set_data(x, y_subset)
-    line3.set_data(x_R[1:i+1], R[1:i+1])
+    line3.set_data(x_R[:i], R[1:i+1])
     print(i)
     return line1, line2, line3,
 
