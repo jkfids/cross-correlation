@@ -9,6 +9,7 @@ Created on Tue Mar 30 11:28:00 2021
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from matplotlib.animation import FuncAnimation
 from time import time
 
 # Import local modules
@@ -26,12 +27,13 @@ sensor2 = df2.to_numpy().flatten()
 
 # Plot sensor data
 sampling_freq = 44000
-X = np.linspace(0, len(sensor1)/sampling_freq, len(sensor1))
+length = len(sensor1)
+X1 = np.linspace(0, length/sampling_freq, len(sensor1))
 
 fig1, (ax1, ax2) = plt.subplots(2, 1)
-ax1.plot(X, sensor1, linewidth=0.2)
+ax1.plot(X1, sensor1, linewidth=0.2)
 ax1.set_ylabel('Sensor 1')
-ax2.plot(X, sensor2, linewidth=0.2)
+ax2.plot(X1, sensor2, linewidth=0.2)
 ax2.set_xlabel('Time (s)')
 ax2.set_ylabel('Sensor 2')
 fig1.suptitle('Sensor Data')
@@ -43,12 +45,13 @@ fig1.savefig('output/sensordata_plot.png')
 start = time()
 R = norm_crosscorr(sensor1, sensor2)
 #R = np.correlate(sensor1, sensor2, 'full')
+#R = spectral_crosscorr(sensor1, sensor2)
 end = time()
-X = np.linspace(-0.5, 0.5, len(R))
+X2 = np.linspace(-0.5, 0.5, len(R))
 print(f'Time elapsed (calculate cross-corr vector): {round(end - start, 2)}s')
 
 fig2, ax = plt.subplots()
-ax.plot(X, R, linewidth=0.2)
+ax.plot(X2, R, linewidth=0.2)
 ax.set_title('Sensor Cross Correlation')
 ax.set_xlabel('Lag')
 ax.set_ylabel('Correlation (Normalized)')
@@ -60,6 +63,7 @@ fig2.savefig('output/sensorcorrelation_plot.png')
 # Calculate time offset between two signals and hence distance between sensors
 scale = 1/44000 # Sampling rate of 44 kHz
 offset = calc_offset(R, scale)
+#offset = calc_fourier_offset(R, scale)
 v = 333 # Sounds moves at 333 m/s
 dist = abs(offset*v)
 print(f'Time offset (sensor 2 lags sensor 1): {round(-offset, 2)}s')
