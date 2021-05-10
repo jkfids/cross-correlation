@@ -14,7 +14,7 @@ from matplotlib.animation import FuncAnimation
 # Local modules
 from crosscorrelation import norm_crosscorr
 
-# Set parameters
+# Set parameters and plot axes
 length = 100
 
 plt.rcParams.update({'font.size': 7})
@@ -52,6 +52,7 @@ leny_slide = len(y_slide)
 x_R = np.linspace(-.5, .5, 2*lenx-1)
 R = norm_crosscorr(y, y)
 
+# Animation functions
 def init():
     line1.set_data([], [])
     line2.set_data([], [])
@@ -66,6 +67,8 @@ def animate(i):
     print(i)
     return line1, line2, line3,
 
-
+# Generate animations and save to output folder
 anim = FuncAnimation(fig, animate, init_func=init, frames=len(R)-1, interval=50, blit=True)
-anim.save('output/crosscorr.gif', writer='ffmpeg')
+anim.save('output/crosscorrelation.gif', writer='ffmpeg')
+
+# Plot static version and save to PNG
