@@ -68,4 +68,4 @@ def animate(i):
 
 
 anim = FuncAnimation(fig, animate, init_func=init, frames=len(R)-1, interval=50, blit=True)
-anim.save('output/crosscorrelation.gif', writer='ffmpeg')
+anim.save('output/crosscorr.gif', writer='ffmpeg')
