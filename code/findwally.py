@@ -26,10 +26,11 @@ puzzle_matrix = np.stack((A,)*3, axis=-1)
 puzzle = Image.fromarray(puzzle_matrix)
 
 # Perform 2d normalized cross-correlation and save cross-correlation matrix
+print('Calculating 2d cross-correlation')
 start = time()
 R = norm_crosscorr2d(t, A)
 end = time()
-print(f'Time elapsed (calculate 2d cross-corr vector): {round(end - start, 2)}s')
+print(f'Time elapsed (calculate 2d cross-corr matrix): {round(end - start, 2)}s')
 pd.DataFrame(R).to_csv('output\wallypuzzle_crosscorr_matrix.csv', header=None, index=None)
 
 # Locate and draw yellow rectangle around target

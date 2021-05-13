@@ -7,6 +7,7 @@ Created on Mon Mar 29 17:06:26 2021
 
 # Standard libraries
 import numpy as np
+from numpy import mean, sqrt, dot, conjugate
 from scipy.fft import fft, ifft
 from numba import njit
 
@@ -14,9 +15,9 @@ from numba import njit
 @njit
 def standev(f):
     """Calculate the standard deviation of an input vector"""
-    f = f - np.mean(f)
+    f = f - mean(f)
     N = len(f)
-    return np.sqrt(np.dot(f, f)/N)
+    return sqrt(dot(f, f)/N)
 
 @njit
 def crosscorr(f, g):
@@ -25,13 +26,13 @@ def crosscorr(f, g):
     construct a cross-correlation vector
     """
     N = len(f)
-    r = np.zeros(2*N - 1, dtype=np.single)
-    r[N-1] = np.dot(f, g)
+    r = np.zeros(2*N - 1, dtype=np.float64)
+    r[N-1] = dot(f, g)
     for i in range(N-1):
     # Calculate elements of the cross-correlation vector by taking dot
     # products of (input) vector slices
-        r[i] = np.dot(f[0:i+1], g[N-1-i:N])
-        r[N+i] = np.dot(f[i+1:N], g[0:N-1-i])
+        r[i] = dot(f[0:i+1], g[N-1-i:N])
+        r[N+i] = dot(f[i+1:N], g[0:N-1-i])
     return r
 
 @njit
@@ -41,8 +42,8 @@ def norm_crosscorr(f, g):
     mean first then divides the correlation vector by the product of standard 
     deviations
     """
-    f = f - np.mean(f)
-    g = g - np.mean(g)
+    f = f - mean(f)
+    g = g - mean(g)
     N = len(f)
     return crosscorr(f, g)/(N*standev(f)*standev(g))
     #return crosscorr(f, g)/(np.std(f)*np.std(g))
@@ -59,37 +60,33 @@ def norm_crosscorr2d(t, A):
     R_h = A_h - t_h + 1 
     R_w = A_w - t_w + 1 
     R = np.zeros((R_h, R_w)) # Initialise R matrix
-    t = t - np.mean(t)
-    sigma_t = np.sqrt(np.sum(t*t))
+    t = t - mean(t)
+    sigma_t = sqrt(np.sum(t*t))
     # Slide t over A via nested for loops, normalising at each step
     for i in range(R_h):
         for j in range(R_w):
             A_subset = A[i:i+t_h, j:j+t_w]
-            A_subset = A_subset - np.mean(A_subset)
-            sigma_A = np.sqrt(np.sum(A_subset*A_subset))
-            try: R[i, j] = np.sum(A_subset*t)/(sigma_A*sigma_t)
-            except: pass # In case of division by 0 (sigma_a)
+            A_subset = A_subset - mean(A_subset)
+            sigma_A = sqrt(np.sum(A_subset*A_subset))
+            if sigma_A != 0: # In case of division by 0
+                R[i, j] = np.sum(A_subset*t)/(sigma_A*sigma_t)
     return R
 
 def spectral_crosscorr(f, g):
     """
-    Calculate the cross-correlation matrix using Scipy's fast fourier transform
+    Calculate the cross-correlation matrix via Scipy's fast fourier transform
     """
-    return ifft(np.conjugate(fft(f))*fft(g)).real
+    return ifft(conjugate(fft(f))*fft(g)).real
     
 @njit
-def calc_offset(R, scale):
+def calc_offset(R, scale, mode='norm'):
     """
     Calculate the time offset between two signals given their cross-correlation 
-    vector
+    vector and time scale (sampling rate)
     """
-    len_f = (len(R)+1)/2 # Length of input vector
-    return (len_f - 1 - np.argmax(R))*scale
+    if mode == 'norm':
+        len_f = (len(R)+1)/2 # Length of input vector
+        return (len_f - 1 - np.argmax(R))*scale
+    elif mode == 'spectral':
+        return (np.argmax(R) - len(R))*scale
 
-@njit
-def calc_fourier_offset(R, scale):
-    """
-    Calculate the time offset between two signals given their spectral
-    cross-correlation vector
-    """
-    return (np.argmax(R) - len(R))*scale

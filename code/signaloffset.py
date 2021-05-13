@@ -9,12 +9,10 @@ Created on Tue Mar 30 11:28:00 2021
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from matplotlib.animation import FuncAnimation
 from time import time
 
 # Local modules
-from crosscorrelation import norm_crosscorr, spectral_crosscorr, \
-                             calc_offset, calc_fourier_offset
+from crosscorrelation import norm_crosscorr, spectral_crosscorr, calc_offset
 
 # Create output directory if it does not exist
 from pathlib import Path
@@ -44,15 +42,22 @@ fig1.savefig('output/sensordata_plot.png')
 
 # Calculate and plot the normalized cross correlation vector
 start = time()
-R = norm_crosscorr(sensor1, sensor2)
-#R = np.correlate(sensor1, sensor2, 'full')
-#R = spectral_crosscorr(sensor1, sensor2)
+R1 = norm_crosscorr(sensor1, sensor2)
 end = time()
-X2 = np.linspace(-0.5, 0.5, len(R))
-print(f'Time elapsed (calculate cross-corr vector): {round(end - start, 2)}s')
+X2 = np.linspace(-0.5, 0.5, len(R1))
+print(f'Time elapsed (calculate crosscorr vector): {round(end - start, 2)}s')
+start = time()
+R2 = np.correlate(sensor1, sensor2, 'full')
+end = time()
+print(f'Time elapsed (calculate numpy crosscorr): {round(end - start, 2)}s')
+start = time()
+R3 = spectral_crosscorr(sensor1, sensor2)
+end = time()
+X3 = np.linspace(-0.5, 0.5, len(R3))
+print(f'Time elapsed (calculate spectral crosscorr): {round(end - start, 2)}s')
 
 fig2, ax = plt.subplots()
-ax.plot(X2, R, linewidth=0.2)
+ax.plot(X2, R1, linewidth=0.2)
 ax.set_title('Sensor Cross Correlation')
 ax.set_xlabel('Lag')
 ax.set_ylabel('Correlation (Normalized)')
@@ -63,9 +68,9 @@ fig2.savefig('output/sensorcorrelation_plot.png')
 
 # Calculate time offset between two signals and hence distance between sensors
 scale = 1/44000 # Sampling rate of 44 kHz
-offset = calc_offset(R, scale)
-#offset = calc_fourier_offset(R, scale)
+offset = calc_offset(R1, scale, mode='norm')
+#offset = calc_offset(R3, scale, mode='spectral')
 v = 333 # Sounds moves at 333 m/s
 dist = abs(offset*v)
 print(f'Time offset (sensor 2 lags sensor 1): {round(-offset, 2)}s')
-print(f'Distance: {round(dist, 2)} metres')
+print(f'Distance between sensors: {round(dist, 2)} metres')
