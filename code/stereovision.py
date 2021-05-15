@@ -9,7 +9,9 @@ Created on Sat May  8 22:14:46 2021
 import numpy as np
 from numpy import exp, array
 from numba import njit
+from math import floor, ceil
 from time import time
+from sklearn.linear_model import LinearRegression
 
 # Local modules
 from crosscorrelation import norm_crosscorr2d
@@ -31,47 +33,19 @@ def gaussian2d(x, y, a, sigma):
     """2D Gaussian function centred around (x, y) = (0, 0)"""
     return a*exp(-(x*x+y*y)/(2*sigma*sigma))
 
-def filter_coords(R, L=12):
-    """
-    Process the cross-correlation matrix of a calibration image to produce a 
-    sorted array of unique dot coordinates
-    """
-    N = shape[0]*shape[1]
-    coords = [[]]*N
-    R_coords = np.argwhere(R > threshold)
-    R_coords[:,[0, 1]] = R_coords[:,[1, 0]] # Swap columns
-    R_coords = R_coords.tolist()
-    # Iterate over unique coordinates
-    for i in range(N):
-        # Select first coordinate from R_coords
-        x_i = R_coords[0][0]
-        y_i = R_coords[0][1]
-        x_sum = x_i
-        y_sum = y_i
-        R_coords_new = R_coords[1:]
-        n = 1
-        # Iterate through remaining R_coords, adding coords similar to
-        # selected coord to summation then removing them from R_coords
-        for coord in R_coords[1:]:
-            x = coord[0]
-            y = coord[1]
-            if (x_i-10 < x < x_i+10) & (y_i-10 < y < y_i+10):
-                x_sum += x
-                y_sum += y
-                n += 1
-                R_coords_new.remove(coord)
-        R_coords = R_coords_new
-        # Take average x_coord and y_coord of similar coords as final pixel coord
-        coords[i] = [round(x_sum/n + L/2), round(y_sum/n + L/2)]
-    coords = array(coords)
+def calc_imageshift(image1, image2, wsize, xgrid, ygrid, ssize=3):
+    """"""
+    im1_array = np.array(image1.convert('L'))
+    im2_array = np.array(image2.convert('L'))
+    h1 = wsize/2
+    h2 = wsize*ssize/2
+    t = im1_array[xgrid - floor(h1):xgrid + ceil(h1), \
+                  ygrid - floor(h1):ygrid + ceil(h1)]
+    A = im2_array[xgrid - floor(h2):xgrid + ceil(h2), \
+                  ygrid - floor(h2):ygrid + ceil(h2)]
+    R = norm_crosscorr2d(t, A)
+    return R
     
-    # Group coordinates into rows from bottom to top
-    coords = coords[np.argsort(coords[:,1])]
-    # Sort row elements from left to right
-    for i in range(shape[0]):
-        row_i = coords[shape[1]*i:shape[1]*(i+1)]
-        coords[shape[1]*i:shape[1]*(i+1)] = row_i[np.argsort(row_i[:,0])]
-    return coords
 
 class Calibration:
     """
@@ -81,6 +55,7 @@ class Calibration:
         self.template = array([], dtype=np.float64)
         self.variables = array([], dtype=np.float64).reshape(0,14)
         self.labels = array([], dtype=np.float64).reshape(0,3)
+        self.coef = array([], dtype=np.float64)
         
     def gen_template(self, L=12):
         """
@@ -92,16 +67,48 @@ class Calibration:
         self.template = template
         self.L = L
         return template
-    
+
     @staticmethod
-    def gen_real_coords(z):
-        """"""
-        coords = np.zeros((N, 3))
-        x = np.arange(-500, 550, 50)
-        y = np.arange(0, 850, 50)
-        coords[:,0] = np.tile(x, shape[0])
-        coords[:,1] = np.repeat(y, shape[1])
-        coords[:,2] = np.repeat(z, N)
+    def filter_coords(R, L):
+        """
+        Process the cross-correlation matrix of a calibration image to produce a 
+        sorted array of unique dot coordinates
+        """
+        N = shape[0]*shape[1]
+        coords = [[]]*N
+        R_coords = np.argwhere(R > threshold)
+        R_coords[:,[0, 1]] = R_coords[:,[1, 0]] # Swap columns
+        R_coords = R_coords.tolist()
+        # Iterate over unique coordinates
+        for i in range(N):
+            # Select first coordinate from R_coords
+            x_i = R_coords[0][0]
+            y_i = R_coords[0][1]
+            x_sum = x_i
+            y_sum = y_i
+            R_coords_new = R_coords[1:]
+            n = 1
+            # Iterate through remaining R_coords, adding coords similar to
+            # selected coord to summation then removing them from R_coords
+            for coord in R_coords[1:]:
+                x = coord[0]
+                y = coord[1]
+                if (x_i-10 < x < x_i+10) & (y_i-10 < y < y_i+10):
+                    x_sum += x
+                    y_sum += y
+                    n += 1
+                    R_coords_new.remove(coord)
+            R_coords = R_coords_new
+            # Take average x_coord and y_coord of similar coords as final pixel coord
+            coords[i] = [round(x_sum/n + L/2), round(y_sum/n + L/2)]
+        coords = array(coords)
+        
+        # Group coordinates into rows from bottom to top
+        coords = coords[np.argsort(coords[:,1])]
+        # Sort row elements from left to right
+        for i in range(shape[0]):
+            row_i = coords[shape[1]*i:shape[1]*(i+1)]
+            coords[shape[1]*i:shape[1]*(i+1)] = row_i[np.argsort(row_i[:,0])]
         return coords
     
     @staticmethod
@@ -117,6 +124,17 @@ class Calibration:
                                       y_l*x_r, y_l*y_r, x_r*y_r), axis=1)
         variables[:, 10:14] = variables[:, :4]**2
         return variables
+
+    @staticmethod
+    def gen_real_coords(z):
+        """"""
+        coords = np.zeros((N, 3))
+        x = np.arange(-500, 550, 50)
+        y = np.arange(0, 850, 50)
+        coords[:,0] = np.tile(x, shape[0])
+        coords[:,1] = np.repeat(y, shape[1])
+        coords[:,2] = np.repeat(z, N)
+        return coords
     
     def process_images(self, left_image, right_image, z):
         """
@@ -128,11 +146,19 @@ class Calibration:
         left_R = norm_crosscorr2d(self.template, left_search)
         right_R = norm_crosscorr2d(self.template, right_search)
         # Filter cross-corr matrix to obtain ordered list of pixel coordinates
-        left_pixel_coords = filter_coords(left_R, self.L)
-        right_pixel_coords = filter_coords(right_R, self.L)
-        #
+        left_pixel_coords = self.filter_coords(left_R, self.L)
+        right_pixel_coords = self.filter_coords(right_R, self.L)
+        # Construct variable and label array for fitting
         variables = self.gen_variables(left_pixel_coords, right_pixel_coords)
         labels = self.gen_real_coords(z)
         self.variables = np.vstack((self.variables, variables))
         self.labels = np.vstack((self.labels, labels))
         return variables, labels
+    
+    def fit_model(self):
+        """"""
+        model = LinearRegression()
+        model.fit(self.variables, self.labels)
+        intercept = model.intercept_.reshape(3,1)
+        self.coef = np.hstack((intercept, model.coef_))
+        

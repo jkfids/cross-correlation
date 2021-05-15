@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 """
 Created on Tue May 11 14:38:16 2021
 
@@ -34,7 +34,7 @@ right_2000 = Image.open('data/cal_image_right_2000.tiff')
 cal = Calibration()
 cal.gen_template(L=12)
 
-# Generate pixel coordinates, real coordinates, and prepare for fitting 
+# Generate real and pixel coordinates, and prepare for fitting 
 print('Processing images...')
 start = time()
 cal.process_images(left_1900, right_1900, z=1900)
@@ -57,9 +57,10 @@ model.fit(cal.variables, cal.labels)
 
 intercept = model.intercept_.reshape(3,1)
 coef = np.hstack((intercept, model.coef_))
-pd.DataFrame(coef).to_csv('output/calibration_coef.csv', header=None, index=None)
+coefdf = pd.DataFrame(coef, index=['x', 'y', 'z'])
+coefdf.to_csv('output/calibration_coef.csv')
 
-# Print mean squared error of model fit
+# Print mean squared error of model
 pred = model.predict(cal.variables)
 MSE_x = mean_squared_error(x, pred[:,0])
 MSE_y = mean_squared_error(y, pred[:,1])

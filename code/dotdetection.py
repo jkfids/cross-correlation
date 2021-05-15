@@ -14,7 +14,7 @@ from time import time
 
 # Local modules
 from crosscorrelation import norm_crosscorr2d
-from stereovision import gaussian, gaussian2d, filter_coords
+from stereovision import gaussian, gaussian2d, Calibration
 
 # Load calibration file and convert into grayscale matrix
 search = Image.open('data/cal_image_left_2000.tiff')
@@ -45,7 +45,7 @@ print(f'Time elapsed (calculate 2d cross-corr vector): {round(end - start, 2)}s'
 # Convert and filter cross-correlation matrix into an ordered array of 
 # coordinates where each dot corresponds to a single coordinate
 start = time()
-coords = filter_coords(R, L, threshold=0.6)
+coords = Calibration.filter_coords(R, L)
 end = time()
 print(f'Time elapsed (filter coordinates): {round(end - start, 2)}s')
 plt.imshow(search)

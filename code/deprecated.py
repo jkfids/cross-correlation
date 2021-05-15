@@ -4,10 +4,10 @@ Created on Tue Mar 30 12:50:42 2021
 
 @author: Fidel
 """
-
+# Import
 import numpy as np
 
-# Part 1 functions
+# Deprecated functions
 def crosscorr(f, g):
     """
     Takes two vectors of the same size, subtracts the vector elements by their
