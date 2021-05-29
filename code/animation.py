@@ -18,7 +18,7 @@ from crosscorrelation import norm_crosscorr
 length = 100
 
 plt.rcParams.update({'font.size': 7})
-fig1, (ax1, ax2, ax3) = plt.subplots(3,1, dpi=144)
+fig1, (ax1, ax2, ax3) = plt.subplots(3, 1, dpi=144)
 fig1.tight_layout(h_pad=0, rect=[-0.055, -0.05, 1.015, 0.98])
 
 line1, = ax1.plot([], [], lw=2, color='tab:blue')
@@ -53,11 +53,14 @@ x_R = np.linspace(-.5, .5, 2*lenx-1)
 R = norm_crosscorr(y, y)
 
 # Generate animations and save to output folder
+
+
 def init():
     line1.set_data([], [])
     line2.set_data([], [])
     line3.set_data([], [])
     return line1, line2, line3,
+
 
 def animate(i):
     y_subset = y_slide[leny_slide-i-1-lenx:leny_slide-i-1]
@@ -66,8 +69,10 @@ def animate(i):
     line3.set_data(x_R[1:i+1], R[1:i+1])
     return line1, line2, line3,
 
+
 start = time()
-anim = FuncAnimation(fig1, animate, init_func=init, frames=len(R)-1, interval=50, blit=True)
+anim = FuncAnimation(fig1, animate, init_func=init,
+                     frames=len(R)-1, interval=50, blit=True)
 anim.save('output/crosscorrelation.gif', writer='ffmpeg')
 end = time()
 print(f'Time elapsed (animation): {round(end - start, 2)}s')

@@ -1,0 +1,8 @@
+numba==0.53.0
+scipy==1.6.2
+pandas==1.2.3
+numpy==1.19.2
+matplotlib==3.3.4
+yfinance==0.1.59
+Pillow==8.2.0
+scikit_learn==0.24.2

@@ -7,158 +7,102 @@ Created on Sat May  8 22:14:46 2021
 
 # Standard libraries
 import numpy as np
-from numpy import exp, array
-from numba import njit
 from math import floor, ceil
-from time import time
-from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
 
 # Local modules
 from crosscorrelation import norm_crosscorr2d
 
-# Global variables
-a = 214.45037311374364
-sigma = 6.934444436509097
-shape = (17, 21)
-N = shape[0]*shape[1]
-threshold = 0.6
 
-@njit
-def gaussian(x, a, sigma):
-    """1D Gaussian function centred around x = 0"""
-    return a*exp(-x*x/(2*sigma*sigma))
-
-@njit
-def gaussian2d(x, y, a, sigma):
-    """2D Gaussian function centred around (x, y) = (0, 0)"""
-    return a*exp(-(x*x+y*y)/(2*sigma*sigma))
-
-def calc_imageshift(image1, image2, wsize, xgrid, ygrid, ssize=3):
+def calc_shift(image1, image2, wsize, xgrid, ygrid, ssize=(3, 3)):
     """"""
-    im1_array = np.array(image1.convert('L'))
-    im2_array = np.array(image2.convert('L'))
+    # Convert PIL images into numpy arrays
+    imarray1 = np.array(image1.convert('L'))
+    imarray2 = np.array(image2.convert('L'))
+    # Pad image2 array for edge cases
+    xpad = ceil(wsize*(ssize[0]-1)/2)
+    ypad = ceil(wsize*(ssize[1]-1)/2)
+    imarray2 = np.pad(imarray2, ((ypad, ypad), (xpad, xpad)))
+
     h1 = wsize/2
-    h2 = wsize*ssize/2
-    t = im1_array[xgrid - floor(h1):xgrid + ceil(h1), \
-                  ygrid - floor(h1):ygrid + ceil(h1)]
-    A = im2_array[xgrid - floor(h2):xgrid + ceil(h2), \
-                  ygrid - floor(h2):ygrid + ceil(h2)]
+    h2x = round(wsize*ssize[0]/2)
+    h2y = round(wsize*ssize[1]/2)
+    t = imarray1[ygrid - floor(h1):ygrid + ceil(h1),
+                 xgrid - floor(h1):xgrid + ceil(h1)]
+    A = imarray2[ygrid + ypad - h2y:ygrid + ypad + h2y,
+                 xgrid + xpad - h2x:xgrid + xpad + h2x]
     R = norm_crosscorr2d(t, A)
-    return R
-    
 
-class Calibration:
-    """
-    """
-    def __init__(self):
-        self.L = 0
-        self.template = array([], dtype=np.float64)
-        self.variables = array([], dtype=np.float64).reshape(0,14)
-        self.labels = array([], dtype=np.float64).reshape(0,3)
-        self.coef = array([], dtype=np.float64)
-        
-    def gen_template(self, L=12):
-        """
-        """
-        template = np.zeros((L, L))
-        template_row = np.linspace(-L/2+0.5, L/2-0.5, L)
-        for i in range(L):
-            template[i] = gaussian2d(template_row, i-(L-1)/2, a, sigma)
-        self.template = template
-        self.L = L
-        return template
+    y, x = np.argwhere(R == np.max(R)).flatten()
+    dpx = round(x - wsize*(ssize[0]-1)/2)
+    dpy = round(y - wsize*(ssize[1]-1)/2)
+    return [dpx, dpy]
 
-    @staticmethod
-    def filter_coords(R, L):
-        """
-        Process the cross-correlation matrix of a calibration image to produce a 
-        sorted array of unique dot coordinates
-        """
-        N = shape[0]*shape[1]
-        coords = [[]]*N
-        R_coords = np.argwhere(R > threshold)
-        R_coords[:,[0, 1]] = R_coords[:,[1, 0]] # Swap columns
-        R_coords = R_coords.tolist()
-        # Iterate over unique coordinates
-        for i in range(N):
-            # Select first coordinate from R_coords
-            x_i = R_coords[0][0]
-            y_i = R_coords[0][1]
-            x_sum = x_i
-            y_sum = y_i
-            R_coords_new = R_coords[1:]
-            n = 1
-            # Iterate through remaining R_coords, adding coords similar to
-            # selected coord to summation then removing them from R_coords
-            for coord in R_coords[1:]:
-                x = coord[0]
-                y = coord[1]
-                if (x_i-10 < x < x_i+10) & (y_i-10 < y < y_i+10):
-                    x_sum += x
-                    y_sum += y
-                    n += 1
-                    R_coords_new.remove(coord)
-            R_coords = R_coords_new
-            # Take average x_coord and y_coord of similar coords as final pixel coord
-            coords[i] = [round(x_sum/n + L/2), round(y_sum/n + L/2)]
-        coords = array(coords)
-        
-        # Group coordinates into rows from bottom to top
-        coords = coords[np.argsort(coords[:,1])]
-        # Sort row elements from left to right
-        for i in range(shape[0]):
-            row_i = coords[shape[1]*i:shape[1]*(i+1)]
-            coords[shape[1]*i:shape[1]*(i+1)] = row_i[np.argsort(row_i[:,0])]
-        return coords
-    
-    @staticmethod
-    def gen_variables(left_pixel_coords, right_pixel_coords):
+
+class StereoVision:
+    """"""
+
+    def __init__(self, wsize, ssize=(3, 3), overlap=0, multipass_level=1):
+        self.wsize = wsize
+        self.ssize = ssize
+        self.overlap = overlap
+        self.multipass_level = multipass_level
+
+        self.dparray = np.array([])
+
+    def calc_shift(self, imarray1, imarray2, xgrid, ygrid, xguess=0, yguess=0):
         """"""
-        x_l = left_pixel_coords[:, 0]
-        y_l = left_pixel_coords[:, 1]
-        x_r = right_pixel_coords[:, 0]
-        y_r = right_pixel_coords[:, 1]
-        variables = np.zeros((N, 14))
-        variables[:, :4] = np.hstack((left_pixel_coords, right_pixel_coords))
-        variables[:, 4:10] = np.stack((x_l*y_l, x_l*x_r, x_l*y_r, \
-                                      y_l*x_r, y_l*y_r, x_r*y_r), axis=1)
-        variables[:, 10:14] = variables[:, :4]**2
-        return variables
+        # Pad imarray2 for edge cases
+        xpad = ceil(self.wsize*(self.ssize[0]-1)/2)
+        ypad = ceil(self.wsize*(self.ssize[1]-1)/2)
+        imarray2 = np.pad(imarray2, ((ypad, ypad), (xpad, xpad)))
 
-    @staticmethod
-    def gen_real_coords(z):
+        h1 = self.wsize/2
+        h2x = round(self.wsize*self.ssize[0]/2)
+        h2y = round(self.wsize*self.ssize[1]/2)
+        t = imarray1[ygrid - floor(h1):ygrid + ceil(h1),
+                     xgrid - floor(h1):xgrid + ceil(h1)]
+        A = imarray2[ygrid + yguess + ypad - h2y:ygrid + yguess + ypad + h2y,
+                     xgrid + xguess + xpad - h2x:xgrid + xguess + xpad + h2x]
+        try:
+            R = norm_crosscorr2d(t, A)
+            y, x = np.argwhere(R == np.max(R)).flatten()
+            dpx = round(x - self.wsize*(self.ssize[0]-1)/2)
+            dpy = round(y - self.wsize*(self.ssize[1]-1)/2)
+            return [dpx + xguess, dpy + yguess]
+        except:
+            return [0, 0]
+
+    def calc_dparray(self, image1, image2):
         """"""
-        coords = np.zeros((N, 3))
-        x = np.arange(-500, 550, 50)
-        y = np.arange(0, 850, 50)
-        coords[:,0] = np.tile(x, shape[0])
-        coords[:,1] = np.repeat(y, shape[1])
-        coords[:,2] = np.repeat(z, N)
-        return coords
-    
-    def process_images(self, left_image, right_image, z):
-        """
-        """
         # Convert PIL image into numpy array
-        left_search = np.array(left_image.convert('L'))
-        right_search = np.array(right_image.convert('L'))
-        # Calculate cross-corr matrix between image arrays and dot template
-        left_R = norm_crosscorr2d(self.template, left_search)
-        right_R = norm_crosscorr2d(self.template, right_search)
-        # Filter cross-corr matrix to obtain ordered list of pixel coordinates
-        left_pixel_coords = self.filter_coords(left_R, self.L)
-        right_pixel_coords = self.filter_coords(right_R, self.L)
-        # Construct variable and label array for fitting
-        variables = self.gen_variables(left_pixel_coords, right_pixel_coords)
-        labels = self.gen_real_coords(z)
-        self.variables = np.vstack((self.variables, variables))
-        self.labels = np.vstack((self.labels, labels))
-        return variables, labels
+        imarray1 = np.array(image1.convert('L'))
+        imarray2 = np.array(image2.convert('L'))
+        # Pad image arrays for evenly sized windows
+        h, w = imarray1.shape
+        xpad = self.wsize - w % self.wsize
+        ypad = self.wsize - h % self.wsize
+        imarray1 = np.pad(imarray1, ((0, ypad), (0, xpad)))
+        imarray2 = np.pad(imarray2, ((0, ypad), (0, xpad)))
+        # Initialise range of centre x, y-coordinates (considering overlap)
+        # and dparray
+        xcoords = np.arange(round(self.wsize/2), w-round(self.wsize/2)+1,
+                            round(self.wsize*(1-self.overlap)))
+        ycoords = np.arange(round(self.wsize/2), h-round(self.wsize/2)+1,
+                            round(self.wsize*(1-self.overlap)))
+        dparray = np.zeros((2, ycoords.size, xcoords.size), dtype=np.int32)
+        # Repeat dparray calculation    
+        for level in range(self.multipass_level):
+            for i, ycoord in enumerate(ycoords):
+                for j, xcoord in enumerate(xcoords):
+                    dparray[:, i, j] = self.calc_shift(imarray1, imarray2, xcoord, ycoord, dparray[0, i, j], dparray[1, i, j])
+            if level == self.multipass_level - 1:
+                self.dparray = dparray
+                return dparray 
+            self.wsize = round(self.wsize/2)
+            #self.ssize = (self.ssize[0]/3, self.ssize[1]/3)
+            xcoords = np.dstack((xcoords-round(self.wsize/2), xcoords+round(self.wsize/2))).flatten()
+            ycoords = np.dstack((ycoords-round(self.wsize/2), ycoords+round(self.wsize/2))).flatten()
+            dparray = np.kron(dparray, np.ones((2,2), dtype=np.int32))
     
-    def fit_model(self):
-        """"""
-        model = LinearRegression()
-        model.fit(self.variables, self.labels)
-        intercept = model.intercept_.reshape(3,1)
-        self.coef = np.hstack((intercept, model.coef_))
         
