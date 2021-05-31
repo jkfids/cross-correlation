@@ -89,12 +89,12 @@ def spectral_crosscorr(f, g):
 
 
 @njit
-def calc_offset(R, scale, mode='norm'):
+def calc_offset(R, scale, mode='spatial'):
     """
     Calculate the time offset between two signals given their cross-correlation 
     vector and time scale (sampling rate)
     """
-    if mode == 'norm':
+    if mode == 'spatial':
         len_f = (len(R)+1)/2  # Length of input vector
         return (len_f - 1 - np.argmax(R))*scale
     elif mode == 'spectral':

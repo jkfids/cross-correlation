@@ -6,7 +6,6 @@ Created on Tue Mar 30 11:28:00 2021
 """
 
 # Standard libraries
-from pathlib import Path
 from time import time
 import numpy as np
 import pandas as pd
@@ -14,9 +13,6 @@ from matplotlib import pyplot as plt
 
 # Local modules
 from crosscorrelation import norm_crosscorr, spectral_crosscorr, calc_offset
-
-# Create output directory if it does not exist
-Path('output').mkdir(parents=True, exist_ok=True)
 
 # Import sensor data via pandas
 df1 = pd.read_csv('data/sensor1_data.txt', delimiter='\t', header=None)
@@ -68,9 +64,9 @@ fig2.savefig('output/sensorcorrelation_plot.png')
 
 # Calculate time offset between two signals and hence distance between sensors
 scale = 1/44000  # Sampling rate of 44 kHz
-offset = calc_offset(R1, scale, mode='norm')
+offset = calc_offset(R1, scale, mode='spatial')
 #offset = calc_offset(R3, scale, mode='spectral')
 v = 333  # Sounds moves at 333 m/s
 dist = abs(offset*v)
 print(f'Time offset (sensor 2 lags sensor 1): {round(-offset, 2)}s')
-print(f'Distance between sensors: {round(dist, 2)} metres')
+print(f'Distance between sensors: {round(dist, 2)}m')

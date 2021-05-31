@@ -95,14 +95,18 @@ class StereoVision:
         for level in range(self.multipass_level):
             for i, ycoord in enumerate(ycoords):
                 for j, xcoord in enumerate(xcoords):
-                    dparray[:, i, j] = self.calc_shift(imarray1, imarray2, xcoord, ycoord, dparray[0, i, j], dparray[1, i, j])
+                    dparray[:, i, j] = self.calc_shift(
+                        imarray1, imarray2, xcoord, ycoord, 
+                        dparray[0, i, j], dparray[1, i, j]
+                        )
             if level == self.multipass_level - 1:
                 self.dparray = dparray
                 return dparray 
             self.wsize = round(self.wsize/2)
-            #self.ssize = (self.ssize[0]/3, self.ssize[1]/3)
-            xcoords = np.dstack((xcoords-round(self.wsize/2), xcoords+round(self.wsize/2))).flatten()
-            ycoords = np.dstack((ycoords-round(self.wsize/2), ycoords+round(self.wsize/2))).flatten()
+            xcoords = np.dstack((xcoords-round(self.wsize/2), 
+                                 xcoords+round(self.wsize/2))).flatten()
+            ycoords = np.dstack((ycoords-round(self.wsize/2), 
+                                 ycoords+round(self.wsize/2))).flatten()
             dparray = np.kron(dparray, np.ones((2,2), dtype=np.int32))
     
         

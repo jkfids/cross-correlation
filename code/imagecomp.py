@@ -14,15 +14,15 @@ from PIL import Image
 # Local modules
 from stereovision import StereoVision
 
-image1 = Image.open('data/stereo/left_desert.png')
-image2 = Image.open('data/stereo/right_desert.png')
+#image1 = Image.open('data/stereo/left_desert.png')
+#image2 = Image.open('data/stereo/right_desert.png')
 
-w, h = image1.size
-image1 = image1.resize((round(w/2), round(h/2)))
-image2 = image2.resize((round(w/2), round(h/2)))
+#w, h = image1.size
+#image1 = image1.resize((round(w/2), round(h/2)))
+#image2 = image2.resize((round(w/2), round(h/2)))
 
-#image1 = Image.open('data/stereo/left_portal.tiff')
-#image2 = Image.open('data/stereo/right_portal.tiff')
+image1 = Image.open('data/stereo/left_portal.tiff')
+image2 = Image.open('data/stereo/right_portal.tiff')
 
 #image1 = Image.open('data/test_left_1.tiff')
 #image2 = Image.open('data/test_right_1.tiff')
@@ -30,7 +30,8 @@ image2 = image2.resize((round(w/2), round(h/2)))
 #dpx, dpy = calc_shift(image1, image2, 64, 175, 215, (3,3))
 #print(dpx, dpy)
 
-test = StereoVision(64, overlap=0, ssize=(3,3), multipass_level=4)
+#test = StereoVision(64, overlap=0, ssize=(3,2), multipass_level=4)
+test = StereoVision(32, overlap=0, ssize=(3,3), multipass_level=1)
 start = time()
 dparray = test.calc_dparray(image1, image2)
 end = time()
