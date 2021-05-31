@@ -14,32 +14,37 @@ from PIL import Image
 # Local modules
 from stereovision import StereoVision
 
-#image1 = Image.open('data/stereo/left_desert.png')
-#image2 = Image.open('data/stereo/right_desert.png')
+"""
+image = Image.open('data/newyork.jpg')
+w, h = image.size
+image2 = image.crop((0, 0, round(w/2), h))
+image1 = image.crop((round(w/2), 0, w, h))
+"""
 
-#w, h = image1.size
-#image1 = image1.resize((round(w/2), round(h/2)))
-#image2 = image2.resize((round(w/2), round(h/2)))
+image1 = Image.open('data/stereo/left_desert.png')
+image2 = Image.open('data/stereo/right_desert.png')
 
-image1 = Image.open('data/stereo/left_portal.tiff')
-image2 = Image.open('data/stereo/right_portal.tiff')
+#image1 = Image.open('data/stereo/left_cone.tiff')
+#image2 = Image.open('data/stereo/right_cone.tiff')
 
-#image1 = Image.open('data/test_left_1.tiff')
-#image2 = Image.open('data/test_right_1.tiff')
+#image1 = Image.open('data/stereo/test_left_2.tiff')
+#image2 = Image.open('data/stereo/test_right_2.tiff')
 
 #dpx, dpy = calc_shift(image1, image2, 64, 175, 215, (3,3))
 #print(dpx, dpy)
 
-#test = StereoVision(64, overlap=0, ssize=(3,2), multipass_level=4)
-test = StereoVision(32, overlap=0, ssize=(3,3), multipass_level=1)
 start = time()
-dparray = test.calc_dparray(image1, image2)
+test = StereoVision(image1, image2, resize=0.5)
+dparray, _ = test.calc_dparray(64, (3,2), overlap=0, multipass_level=4)
 end = time()
 print(f'Time elapsed: {round(end - start, 3)}s')
+
+dparray[0][dparray[0]<0] = np.mean(dparray[0])
 
 #dparray = dparray[:,:-1,:-1]
 x = dparray[0]**2
 y = dparray[1]**2
 dprms = np.sqrt(x+y)
 plt.imshow(dprms)
+plt.imshow(dparray[0])
 plt.colorbar()

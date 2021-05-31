@@ -59,21 +59,21 @@ def norm_crosscorr2d(t, A):
     Calculate the normalized cross-correlation between template matrix t
     and search region matrix A
     """
-    sigma_t = sqrt(np.sum(t*t))
-    A_h, A_w = np.shape(A)
-    t_h, t_w = np.shape(t)
     # Calculate the width and height of the cross-correlation matrix
-    R_h = A_h - t_h + 1
-    R_w = A_w - t_w + 1
-    R = np.zeros((R_h, R_w))  # Initialise R matrix
+    h_A, w_A = np.shape(A)
+    h_t, w_t = np.shape(t)
+    h_R = h_A - h_t + 1
+    w_R = w_A - w_t + 1
+    # Initialise R matrix
+    R = np.zeros((h_R, w_R))  
     t = t - mean(t)
     sigma_t = sqrt(np.sum(t*t))
     if sigma_t == 0:  # In case of division by 0 (sigma_t)
         return R
     # Slide t over A via nested for loops, normalising at each step
-    for i in range(R_h):
-        for j in range(R_w):
-            A_subset = A[i:i+t_h, j:j+t_w]
+    for i in range(h_R):
+        for j in range(w_R):
+            A_subset = A[i:i+h_t, j:j+w_t]
             A_subset = A_subset - mean(A_subset)
             sigma_A = sqrt(np.sum(A_subset*A_subset))
             if sigma_A != 0:  # In case of division by 0 (sigma_A)
