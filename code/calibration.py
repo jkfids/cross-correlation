@@ -25,9 +25,8 @@ shape = (17, 21)
 N = shape[0]*shape[1]
 threshold = 0.6
 
-# Calibration functions and class
 
-
+# Gaussian functions
 @njit
 def gaussian(x, a, sigma):
     """1D Gaussian function centred around x = 0"""
@@ -42,7 +41,7 @@ def gaussian2d(x, y, a, sigma):
 
 class Calibration:
     """
-    Calibration class 
+    Calibration class to calibrate mapping between pixel space and real space
     """
 
     def __init__(self):
@@ -162,7 +161,7 @@ class Calibration:
     def fit_coef(self):
         """
         Obtain coeficients for 4D second order fit of pixel coords (variables)
-        and real coords (labels)
+        mapped onto real coords (labels)
         """
         model = LinearRegression()
         model.fit(self.variables, self.labels)

@@ -18,9 +18,15 @@ from numba import njit
 def standev(f):
     """Calculate the standard deviation of an input vector"""
     f = f - mean(f)
-    N = len(f)
-    return sqrt(dot(f, f)/N)
+    return sqrt(dot(f, f)/f.size)
 
+@njit
+def norm_corr(f, g):
+    """Calculate the normalised correlation between two vectors"""
+    stds = standev(f)*standev(g)
+    f = f - mean(f)
+    g = g - mean(g)
+    return dot(f, g)/(f.size*stds)
 
 @njit
 def crosscorr(f, g):
@@ -28,7 +34,7 @@ def crosscorr(f, g):
     Takes two numpy arrays of the same size and passes one over the other to 
     construct a cross-correlation vector
     """
-    N = len(f)
+    N = f.size
     r = np.zeros(2*N - 1, dtype=np.float64)
     r[N-1] = dot(f, g)
     for i in range(N-1):
@@ -46,11 +52,10 @@ def norm_crosscorr(f, g):
     mean first then divides the correlation vector by the product of standard 
     deviations
     """
+    stds = standev(f)*standev(g)
     f = f - mean(f)
     g = g - mean(g)
-    N = len(f)
-    return crosscorr(f, g)/(N*standev(f)*standev(g))
-    # return crosscorr(f, g)/(np.std(f)*np.std(g))
+    return crosscorr(f, g)/(f.size*stds)
 
 
 @njit
@@ -92,7 +97,7 @@ def spectral_crosscorr(f, g):
 def calc_offset(R, scale, mode='spatial'):
     """
     Calculate the time offset between two signals given their cross-correlation 
-    vector and time scale (sampling rate)
+    vector and time scale (reciprocal of sampling rate)
     """
     if mode == 'spatial':
         len_f = (len(R)+1)/2  # Length of input vector
