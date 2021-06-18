@@ -61,9 +61,10 @@ ax1.set_box_aspect([1, 2, 0.8])
 ax1.view_init(elev=25, azim=310)
 fig1.savefig('output/testscan1.png')
 
+
 #%%
 # Test pair 2
-"""
+
 left_test2 = Image.open('data/stereo/test_left_2.tiff')
 right_test2 = Image.open('data/stereo/test_right_2.tiff')
 test2 = StereoVision(left_test2, right_test2, calibration=coef)
@@ -101,7 +102,7 @@ ax2.zaxis.pane.fill = False
 ax2.set_box_aspect([1.4, 1, 1.2])
 ax2.view_init(elev=20, azim=300)
 fig2.savefig('output/testscan2.png')
-"""
+
 
 #%%
 # Test pair 3
@@ -111,8 +112,8 @@ right_test3 = Image.open('data/stereo/test_right_3.tiff')
 test3 = StereoVision(left_test3, right_test3, calibration=coef)
 
 start = time()
-dparray3, coord_grid3 = test3.calc_dparray(64, (4,4), multipass=3)
-#dparray2 = test2.filter_dparray(stds=5, edge_cutoff=(2,-2,10,-8))
+dparray3, coord_grid3 = test3.calc_dparray(64, (4,4), multipass=2)
+dparray3 = test3.filter_dparray(stds=5, edge_cutoff=(4,-4,8,-8))
 end = time()
 print(f'Time elapsed (test pair 3): {round(end - start, 3)}s')
 
@@ -123,24 +124,24 @@ X = np.reshape(coords[:, 0], R.shape)
 Y = np.reshape(coords[:, 1], R.shape)
 Z = np.reshape(coords[:, 2], R.shape)
 # Filter coords by threshold
-#Z[Z < 1915] = Z[Z > 2005] = 2000
-
-#%%
+Z[Z < 1915] = Z[Z > 2005] = 1960
 
 # Construct surface plot
 fig3 = plt.figure(dpi=144)
 fig3.set_size_inches(8, 8)
 ax3 = fig3.add_subplot(projection='3d')
 surf = ax3.plot_surface(X, Z, Y, cmap='viridis')
-ax3.set_xlim3d(-700, 700)
+ax3.set_xlim3d(-650, 650)
 ax3.set_ylim3d(1600, 2000)
-ax3.set_zlim3d(-200, 1000)
+ax3.set_zlim3d(-100, 900)
 ax3.set_zlabel('y (mm)')
 ax3.set_xlabel('x (mm)')
 ax3.set_ylabel('z (mm)')
+ax3.set_title('wsize = 64, ssize = (4,4), overlap=0, multipass=2')
 ax3.xaxis.pane.fill = False
 ax3.yaxis.pane.fill = False
 ax3.zaxis.pane.fill = False
-#ax2.set_box_aspect([1.2, 1, 1])
+ax3.set_box_aspect([1.4, 1, 1.2])
 ax3.view_init(elev=20, azim=300)
+fig3.savefig('output/testscan3.png')
 
