@@ -26,7 +26,7 @@ puzzle_matrix = np.stack((A,)*3, axis=-1)
 puzzle = Image.fromarray(puzzle_matrix)
 
 # Perform 2d normalized cross-correlation and save cross-correlation matrix
-print('Calculating 2d cross-correlation')
+print('Calculating 2d cross-correlation')  
 start = time()
 R = norm_crosscorr2d(t, A)
 end = time()

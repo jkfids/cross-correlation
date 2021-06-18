@@ -47,6 +47,7 @@ class Calibration:
     def __init__(self):
         self.L = 0
         self.template = array([], dtype=np.float64)
+        self.shape = ()
         self.variables = array([], dtype=np.float64).reshape(0, 14)
         self.labels = array([], dtype=np.float64).reshape(0, 3)
         self.coef = array([], dtype=np.float64)
@@ -65,7 +66,7 @@ class Calibration:
         return template
 
     @staticmethod
-    def filter_coords(R, L):
+    def filter_coords(R, L, shape=shape):
         """
         Process the cross-correlation matrix of a calibration image to produce
         a sorted array of unique dot coordinates
@@ -98,7 +99,6 @@ class Calibration:
             # Take average x_coord and y_coord of similar coords as pixel coord
             coords[i] = [round(x_sum/n + L/2), round(y_sum/n + L/2)]
         coords = array(coords)
-
         # Group coordinates into rows from bottom to top
         coords = coords[np.argsort(coords[:, 1])]
         # Sort elements in individual rows from left to right
@@ -108,13 +108,13 @@ class Calibration:
         return coords
 
     @staticmethod
-    def gen_variables(pcoords1, pcoords2):
+    def gen_variables(pcoords1, pcoords2, shape=shape):
         """Generate ordered variable array from left and right pixel coords"""
         x_l = pcoords1[:, 0]
         y_l = pcoords1[:, 1]
         x_r = pcoords2[:, 0]
         y_r = pcoords2[:, 1]
-        variables = np.zeros((N, 14))
+        variables = np.zeros((shape[0]*shape[1], 14))
         # First order terms
         variables[:, :4] = np.hstack((pcoords1, pcoords2))
         # Second order terms
@@ -135,7 +135,7 @@ class Calibration:
         coords[:, 2] = np.repeat(z, N)
         return coords
 
-    def process_images(self, image1, image2, z):
+    def process_images(self, image1, image2, z=None, shape=shape):
         """
         Performs 2D cross-corr on pair of images to find and filter the pixel
         coords of calibration dots, then generate and append ordered lists of 
@@ -148,13 +148,16 @@ class Calibration:
         R1 = norm_crosscorr2d(self.template, search1)
         R2 = norm_crosscorr2d(self.template, search2)
         # Filter cross-corr matrix to obtain ordered list of pixel coordinates
-        pcoords1 = self.filter_coords(R1, self.L)
-        pcoords2 = self.filter_coords(R2, self.L)
-        # Construct variable and label array to prepare for model fitting
-        variables = self.gen_variables(pcoords1, pcoords2)
-        labels = self.gen_real_coords(z)
-        # Append obtained variables/labels to full array
+        self.shape = shape
+        pcoords1 = self.filter_coords(R1, self.L, shape)
+        pcoords2 = self.filter_coords(R2, self.L, shape)
+        # Construct and append variables to variable array
+        variables = self.gen_variables(pcoords1, pcoords2, shape)
         self.variables = np.vstack((self.variables, variables))
+        if z == None:
+            return variables
+        # Construct and append labels to fit with variables
+        labels = self.gen_real_coords(z)
         self.labels = np.vstack((self.labels, labels))
         return variables, labels
 
@@ -220,3 +223,5 @@ if __name__ == '__main__':
     # Save coefficients to csv
     coefdf = pd.DataFrame(cal.coef, index=['x', 'y', 'z'])
     coefdf.to_csv('output/calibration_coef.csv') 
+    
+    

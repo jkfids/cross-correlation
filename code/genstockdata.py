@@ -11,7 +11,10 @@ import pandas as pd
 from yfinance import Ticker
 
 
-period = '10y'  # Set price history time period
+# Set price history time period
+period = '2y'  
+start = ''
+end = ''
 
 # Generate a dataframe containing info about the S&P500 and save it as csv
 table = pd.read_html(
@@ -22,6 +25,7 @@ infodf.to_csv("data/S&P500_info.csv", index=False)
 
 
 # Obtain the price history of each stock and save it as csv
+print(f'Obtaining historical prices ({period})...')
 companies = infodf[['Symbol', 'Security', 'GICS Sector']].values.tolist()
 
 start = time()
