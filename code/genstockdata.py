@@ -12,7 +12,7 @@ from yfinance import Ticker
 
 
 # Set price history time period
-period = '2y'  
+period = '1y'  
 start = ''
 end = ''
 

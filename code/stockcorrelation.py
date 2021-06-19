@@ -100,9 +100,9 @@ class StockCorr:
         self.corrmatrix += self.corrmatrix.T - np.identity(N)
 
         index = pd.MultiIndex.from_frame(
-            sp500.companies[['Category', 'Symbol']])
+            self.companies[['Category', 'Symbol']])
         self.corrmatrixdf = pd.DataFrame(
-            sp500.corrmatrix, index=index, columns=index)
+            self.corrmatrix, index=index, columns=index)
         return self.corrmatrix, self.corrmatrixdf
 
     def calc_categ_corrmatrix(self):
@@ -133,7 +133,7 @@ class StockCorr:
                     self.categ_corrmatrix[i, j] = norm_corr2(hist1, hist2)
         self.categ_corrmatrix += self.categ_corrmatrix.T - np.identity(N)
 
-        self.categ_corrmatrixdf = pd.DataFrame(sp500.corrmatrix,
+        self.categ_corrmatrixdf = pd.DataFrame(self.corrmatrix,
                                                index=self.companies,
                                                columns=self.companies)
         return self.categ_corrmatrix, self.categ_corrmatrixdf
@@ -143,6 +143,7 @@ class StockCorr:
         Generate the stock correlation network as a minimum spanning tree
         """
         G = nx.Graph()
+        # Iterate over every unique combination of stocks
         for i, symb1 in enumerate(self.symbols):
             for j, symb2 in enumerate(self.symbols):
                 if i < j:
@@ -204,7 +205,7 @@ class StockCorr:
                                   markerfacecolor=value, markersize=7.5))
         fig.colorbar(edges, fraction=0.025, pad=0.01)
         ax.set_axis_off()
-        ax.legend(handles=handles, ncol=1, fontsize=7.5, loc='lower left'  )
+        ax.legend(handles=handles, ncol=2, fontsize=7.5)
         return fig
 
 
