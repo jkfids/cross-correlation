@@ -1,4 +1,4 @@
-# stereo-vision
+# Cross-correlation
 The concept of correlation pervades every scientific field. It is the measure of similarity or dependence between multivariate data, causal or not. In the following project, we introduce a type of correlation called cross-correlation and explore its applications. The project will be implemented in Python version 3.8, where the current repository contains all code, datasets, and documentation.
 
 The document is project into three main sections. The first section, introduces the mathematics of cross-correlation, its basic applications, and programmatic implementation. The
